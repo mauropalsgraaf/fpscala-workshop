@@ -11,17 +11,48 @@
   * Typeclass `15 min`
 
 
+## Introduction
+
+Welcome to the workshop Functional programming, where you will get in touch with the absolute basics of functional programming. This workshop consists of several parts. First we will introduce explain what functional programming. Then we will take a closer look at several reasons why functional programming is increasing in popularity. This will be followed by a hands-on, where you will begin your journey through the basics of Scala and FP. You will play around with algebraïc data types, pattern matching, recursion and typeclasses. All topics will be explained and there are exercises in between that requires you to put the gained knowledge into practice.
+
+Let's get started right away!
+
 ## What is functional programming
 
-As the name suggests, functions are the primary building block of applications. Functions are so called "first class citizens", which means that functions are like data. They can be passed as parameter and a function can return a function. A function that expects a parameter as a function or returns a function is called a higher-order function.
+As you would have expected, functions are the primary building block of application written in FP. This is in contract to object-oriënted programming, where classes are used to construct programs. Functions are so called "first class citizens", which means that functions are like data. You can just use them as any other ordanairy type like String and Int. You can for example pass them as a parameter to another function or have a function that returns another function when called. A function that either receives atleast one parameter as argument or returns a function is called a higher-order function.
 
-A function in functional programming are expressions, in constrast to imperative programming language where they consist out of a number of statements which will be executed sequentially. A definition given by Wikipedia: “Expressions is a combination of one or more explicit values, constants, variables, operators and functions that the programming language interprets and computes to produce another value". Also, besides only consisting out of expressions, functions need to be pure.
+A function in functional programming are expressions, which is in contrast to imperative programming language where they consist of a number of statements which will be executed sequentially. A definition given by Wikipedia: “Expressions are a combination of one or more explicit values, constants, variables, operators and functions that the programming language interprets and computes to produce another value". There are slightly different flavors of functional programming. We will pay attention to purely functional programming. This will restrict functions in a sense that they need to be pure. What does it mean to write a pure function?
 
-A function is pure if it is referentially transparant. "An expression e is referentially transparant if, for all programs p, all occurrences of e in p can be replaced by the result of evaluating e without affecting the meaning of p. A function f is pure if the expression f(x) is referentially transparant for all referentially transparant x.”. Read that sentence a couple of time and make sure you understand.
+A function is pure if it is referentially transparant. "An expression e is referentially transparant if, for all programs p, all occurrences of e in p can be replaced by the result of evaluating e without affecting the meaning of p. A function f is pure if the expression f(x) is referentially transparant for all referentially transparant x.”. Read that sentence a couple of time and make sure you understand. Simply said, we can substitute the function with it's predicted result without altering the behaviour of the program. The following two functions are not referentially transparant:
 
-Having a referentially transparant function has a couple of nice advantages. Reasoning about software becomes easier and software is more likely to be correct.
+```
+// This function is not referentially transparant, because if we substitute
+// the function call to function1() with "hello world", we wouldn't have a println, a.k.a altering the program
+def function1() = {
+  println("test")
 
-Often it's better to use an example to demonstrate something. To show the advantage that we gain of removing side-effects from our function, we'll use an example of a daily thing we all do. This example originally comes from the book Functional Programming in Scala and shows that functions that contain side-effects do not compose. Consider the following function written in Scala. More details will be explained later, but the intend should be clear. This function will give you a coffee given a CreditCard and a PaymentService. There is an obvious side-effect in the function, which is calling the PaymentService. This will charge the CreditCard for the price of a cup of coffee.
+  "hello world" //scala uses implicit return where the last statement will be returned
+}
+
+// This function is not referentially transparant, because the output is unpredictable.
+def randomNumber() = {
+  Math.random ....
+}
+```
+
+There are multiple ways to break referential transparancy. Everything that breaks it is called a side-effect. In the previous examples, println("test") and Math.random are the side-effect and the unpredictable parts of the function.
+
+The following function is referentially transparant
+
+```
+// This function is referentially transparant because we can substitute every function call with it's output
+// If the function call is identity(3), we can replace it with 3 without changing the program.
+def identity(a: Int): Int = a // returns it's input argument
+```
+
+Having functions that are referentially transparant provide some great benefits. Reasoning about software becomes easier and software is more likely to be correct. We will discuss some advantages of functional programming in a bit. First we are going to take a look at why having referentially transparant functions is important.
+
+This example originally comes from the book Functional Programming in Scala and shows that functions that contain side-effects do not compose. Consider the following function written in Scala. More details will be explained later, but the intend should be clear. This function will give you a coffee given a CreditCard and a PaymentService. There is an obvious side-effect in the function, which is calling the PaymentService. This will charge the CreditCard for the price of a cup of coffee.
 
 ```
 class Cafe {
@@ -185,11 +216,7 @@ person1 == person2 // this expression will return false
 
 -------------------------------------------------------
 
-case class Person(name: String, age: Int) {
-  def printAge(): Unit = { // this example is not referentially transparant
-    println(this.age)
-  }
-}
+case class Person(name: String, age: Int)
 
 val person1 = Person("Mauro Palsgraaf", 21)
 val person2 = Person("Mauro Palsgraaf", 21)
@@ -233,7 +260,7 @@ It can be neccesary sometime to have a subtype of everything. Most of the time t
 
 ## Algebraïc data types (ADT)
 
-Let's consider the Option ADT.
+An ADT is a type where we specify the shape of each of the elements. Lets look at an example by looking at the Option for representing missing values a.k.a Option:
 
 ```
 sealed trait Option[+A]
@@ -241,7 +268,16 @@ case class Some[A](x: A) extends Option[A]
 case object None extends Option[Nothing]
 ```
 
-This ADT covers the possibility of missing values. We either have Some with a value of type A or we have None without a value.
+We create a sealed trait Option[+A]. We make it sealed because we don't want this trait to be extended outside this. Traits are also used a interfaces, where you really want this possibility of having a new class implementing the trait.
+
+Option is the name of the so called type constructor. This is also the type that you use to specify your types, like `val x = Option[Int]`
+
+[+A] means that this is a generic type, where the A needs to be a type itself, like Option[Int]. It can't for example be Option[List], because List itself is a type-constructor instead of a type. You will need to specify the type of the list which would result in Option[List[Int]] or Option[List[String]]. The + in front means that the value is covariant. It means that if B is a subtype of A then option[B] is a subtype of Option[A]
+
+### Exercise
+
+Implement an ADT an ADT to represent JSON. For now, we take a simplified JSON value, which can represent a String, an Integer, a Boolean, an Array and an Object. An object is a list of key value pairs. You can encode this as Map[String, (fill in yourself)]
+
 
 ## Pattern matching
 
@@ -387,14 +423,14 @@ Let's do the same as we did with the previous example. We can use the substituti
 9. 21
 ```
 
-As you can see, when we apply the substitution model on a tail recursive function, the function is rewritten instead of expanded every recursive call. We accumulate the state in the recursive function. We can say that interms of loop, loop(Cons(6, Nil)), 15) === loop(Nil, 21). These are steps 7 and 8 from the evaluation of the substitution model.
+As you can see, when we apply the substitution model on a tail recursive function, the function is rewritten instead of expanded every recursive call. We accumulate the state in the recursive function. We can say that in terms of loop, loop(Cons(6, Nil)), 15) === loop(Nil, 21). These are steps 7 and 8 from the evaluation of the substitution model.
 
 ## Hands-on
 
 ## Abstracting over the pattern (head- and tail recursion)
 
 Before you continue reading, do you see how we can abstract over these kinds of functions?
-Hint 1: What is the simularity between the product and sum functions written earlier?
+Hint 1: What is the similarity between the product and sum functions written earlier?
 
 Let's take another look at the implementations:
 
@@ -410,5 +446,185 @@ def product(list: List[Int]): Int = list match {
 }
 ```
 
+We can see that the pattern is the same, only 2 things are different.
+
+* The value when the list is empty
+* The function that combines the head of the list to the result of the recursive part.
+
+To abstract over this pattern, we can paramaterize the things that can change, which will result in the following signature. We call this function foldLeft
+
+```
+def foldLeft[A](list: List[A])(z: A)(f: (A, A) => A): A
+```
+
+We can even make this function more generic, since we can remove the fact that the output type needs to be the same type as the input type. The new signature will look like this
+
+```
+def foldLeft[A, B](list: List[A])(z: B)(f: (B, A) => B): B
+```
+
+Try to implement this function. As you are implementing these kinds of abstractions, you will notice that there are not that many ways to implement this. As functional programmers say, just follow the types!
+
+We just implemented a function that can reduce a list of values to a single value. We can also implement a function which folds from the right side. This can be very important, since there are functions where order matters. Take subtraction for example with List(1, 2, 3). Folding from the left with the first element (1) as Z will result in (-4) where folding from the right with 3 as Z will result in 0.
+
+Try implement foldRight now. The signature is as following:
+
+```
+def foldRight[A, B](list: List[A])(z: B)(f: (A, B) => B): B
+```
+
+Try to give a smart solution, so don't reverse the list at first!
+
+We are not done yet, after we have discovered typeclasses, we can go a step further and abstract to Foldables!
 
 ## Typeclass
+
+Typeclasses are simply said better interfaces. Interfaces fully work based on the subtyping system that object-oriënted languages offer. I can implement the interface on classes which then needs to implement the methods on the interface. There is a simple problem with interfaces, which is that we can't implement inferfaces on classes that we didn't create. For example, if we use a library where we want to have a value object that implements a certain interface. This is simply not possible. Hence, typeclasses solve this problem and more.
+
+In functional programming, we don't use this sub-typing. Simply said, data and things that can be done with the data are two seperate things. As an example we are going to take a look at a very simple example.
+
+```
+trait Eq[A] {
+  def equal(x: A, y: A): Bool
+}
+```
+
+We can implement this trait for every type A. For example, we can implement it for a String, Int and an Option[Int] type
+
+```
+val stringEq = new Eq[String] {
+  def equal(x: String, y: String): Bool = x.equals(y)
+}
+
+val intEq = new Eq[Int] {
+  def equal(x: Int, y: Int): Bool = x == y
+}
+
+val optionIntEq = new Eq[Option[Int]] {
+  def equal(x: Option[Int], y: Option[Int]): Bool = (x, y) match {
+    case (Some(a), Some(b)) => implicitly[Eq[Int]].equal(a, b) //ignore this implicitly for now
+    case (None, None) => true
+    case _ => false
+  }
+}
+```
+
+Now that we have type class instances available, we are able to test equality of our different types that implement the type class. To test equality, you can just call the function
+
+```
+  intEq.equal(3, 4) // false
+```
+
+This is very nice, but it's very likely that we want to abstract upon typeclasses. How do we get our type class instances?
+
+Implicits to the rescue! We can tell Scala that we want to implicitly rely that it exist. This will be verified at compile-time, so no runtime problems at all. We call this principle implicit evidence
+
+```
+
+trait Empty[A] {
+    def empty: A
+}
+
+def helloWorldIfEmpty(a: A)(implicit eq: Eq[A], empty: Empty[A]): String = {
+  if (eq.equal(a, empty.empty)) "Hello World!"
+  else "......"
+}
+```
+
+The implicit keyword can only be in the last parameter list. If you rely on multiple implicits, you can add them in the last argument list as shown in the example. In this case, the caller of the function don't need to provide how the value can be verified for equality and what the empty value is for a given type.
+
+/* Explain implicit scope /*
+
+We need to change 1 more thing to make this code compile. We need to make the instances implicit. You can do this by adding implicit in front of the val or def.
+
+```
+implicit val stringEq = new Eq[String]
+```
+
+Let's do some examples
+
+```
+implicit val intEq = new Eq[Int] {
+  def equal(x: Int, y: Int): Bool = x == y
+}
+
+implicit val intEmpty = new Empty[Int] {
+  def empty = 0
+}
+
+helloWorldIfEmpty(0) // "Hello World"
+helloWorldIfEmpty(1) // "......"
+
+-------------------------------------
+
+implicit val stringEq = new Eq[String] {
+  def equal(x: String, y: String): Bool = x.equals(y)
+}
+
+implicit val stringEmpty = new Empty[String] {
+  def empty = ""
+}
+
+helloWorldIfEmpty("yadayada") // "......"
+helloWorldIfEmpty("") // "Hello World"
+
+```
+
+What I personally really like about typeclasses is that they are existential. You can add functionality to your types which will really make sense if you use them more often!
+
+## Abstracting the length method using typeclasses
+
+Remember that we wrote the length function when practicing our recursion skills. It looks like this:
+
+```
+def length[A](list: List[A]): Int = list match {
+	case Nil => 0
+	case x :: xs => 1 + length(xs)
+}
+```
+
+We did write this function with the help of tail-recursion as well to make sure it's also able to compute the length of a really long list.
+
+```
+def length[A](list: List[A]): Int = {
+	def loop(list: List[A])(acc: Int): Int = list match {
+		case Nil => acc
+		case x :: xs => loop(xs)(acc + 1)
+	}
+}
+```
+
+While we practiced our recursion skills, we discovered a pattern and factored this out and called it folding, or more specific foldLeft and foldRight. The length function with foldLeft did look like this:
+
+```
+def length[A](list: List[A]): Int = foldLeft(list)(0)((b, _) => b + 1)
+```
+
+But, we can go even further! Remember the tree? Isn't it weird that we are not able to compute the length of a tree? To do so, I need to write a new function.. Bummer! I wish there was something called.... typeclasses! There is a special typeclass that we can use perfectly suited for our needs. Take another look at our length function written with foldLeft. The problem is the hardcoded type-constructor that we can fold. The foldable typeclass looks like this:
+
+```
+trait Foldable[F[_]] {
+	def foldLeft[A, B](fa: F[A])(z: B)(f: (B, A) => B): B
+}
+```
+
+### Exercise
+
+1. Try to implement this Foldable typeclass for List and Binary Tree. Assume that they are endoded like this:
+
+```
+sealed trait List[+A]
+case object Nil extends List[Nothing]
+case class Cons[A](v: A, tail: => List[A]) extends List[A]
+
+sealed trait Tree[+A]
+case class Node[A](left: Tree[A], right: Tree[A]) extends Tree[A]
+case class Leaf[A](v: A) extends Tree[A]
+```
+
+2. Try to make the length function work for both the List and Tree
+
+```
+def length[F[_], A](fa: F[A])(implicit foldable: Foldable[F]): Int = 
+	foldable.foldLeft(fa)(0)((b, _) => b + 1)
+```
