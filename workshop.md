@@ -252,15 +252,22 @@ In this case, the identity function can take any type as input and returns a val
 
 It can be neccesary sometime to have a subtype of everything. Most of the time this will be useful when encoding ADT. More about ADT will comes later
 
-### Kinds / Types
-
-
-### Covariance
-
-
 ## Algebraïc data types (ADT)
 
 An ADT is a type where we specify the shape of each of the elements. Lets look at an example by looking at the Option for representing missing values a.k.a Option:
+
+```
+sealed trait Bool
+case object MyTrue extends Bool
+case object MyFalse extends Bool
+```
+We create a sealed trait Emotion. You can add the sealed keyword if you don't want the trait to be extended from outside the file. Traits are also used a interfaces, where you really want this possibility of having a new class implementing the trait.
+
+We can this ADT Bool. Bool is the so called Type Constructor. When specifying types as parameters of functions or as return values, you will use the name of the Type Constructor.
+
+MyTrue and MyFalse are data constructurs and these are the values that are used in your code. In this case it's an logical disjunctions (or), which specifies that Bool is either a MyTrue or a MyFalse.
+
+We can also create an ADT to represent optionallity in our code:
 
 ```
 sealed trait Option[+A]
@@ -268,25 +275,28 @@ case class Some[A](x: A) extends Option[A]
 case object None extends Option[Nothing]
 ```
 
-We create a sealed trait Option[+A]. We make it sealed because we don't want this trait to be extended outside this. Traits are also used a interfaces, where you really want this possibility of having a new class implementing the trait.
+Again, we create a sealed ADT, because we don't want this trait to be extended outside this.
 
-Option is the name of the so called type constructor. This is also the type that you use to specify your types, like `val x = Option[Int]`
-
-[+A] means that this is a generic type, where the A needs to be a type itself, like Option[Int]. It can't for example be Option[List], because List itself is a type-constructor instead of a type. You will need to specify the type of the list which would result in Option[List[Int]] or Option[List[String]]. The + in front means that the value is covariant. It means that if B is a subtype of A then option[B] is a subtype of Option[A]
+[+A] means that this is a generic type, where the A needs to be a type itself, like Option[Int]. It can't for example be Option[List], because List itself is a type-constructor instead of a concrete type. You will need to specify the type of the list which would result in Option[List[Int]] or Option[List[String]]. The + in front means that the value is covariant. It means that if B is a subtype of A then option[B] is a subtype of Option[A].
 
 ### Exercise
-
-Implement an ADT an ADT to represent JSON. For now, we take a simplified JSON value, which can represent a String, an Integer, a Boolean, an Array and an Object. An object is a list of key value pairs. You can encode this as Map[String, (fill in yourself)]
-
+1. Implement an ADT to represent Pets. An Pet can be cat with a name, a fish with a name and a Color or a squid with a name and age. A Color can be Blue, Green or Orange and can be represented as an ADT as well.
 
 ## Pattern matching
 
 Pattern matching is a construct for checking a value against a pattern. It is comparable to a switch statement in Java-like languages, but more powerful.
-I think working with examples is great, so lets dive right into it.
 
-As example, take a look at the following function which adds two to an Option[Int]. If the value is of type Some then add two to the value. If the value is of type None, return None instead
+As example, we will create a function called not, which will negate the boolean.
 
-A function like this will looks like this
+```
+// note that Bool is the ADT you just created yourself
+def not(bool: Bool): Bool = bool match {
+	case MyTrue => MyFalse
+	case MyFalse => MyTrue
+}
+```
+
+You can see that we match the bool and give it the different options a bool can be. In this case, it's MyTrue and MyFalse. This is not much different that a switch statement. Let's look at a different example where we use the just created Option ADT for optionallity. We create a function addTwoToOption which adds 2 if the option value is present
 
 ```
 def addTwoToOption(optionInt: Option[Int]): Option[Int] = optionInt match {
@@ -295,17 +305,29 @@ def addTwoToOption(optionInt: Option[Int]): Option[Int] = optionInt match {
 }
 ```
 
+As we can see in the example, it allows us to destruct and get access to values in constrast to OO-languages like Java where you would implement getters. In our example, the variable v is a wild-card, where as the pattern matches, will be filled with the value of v. So if Option[Int] is `Some(5)`, v will be 5.
+
+Also, we can stack this. If we have an Option[Option[Int]] we can stack patterns.
+
+```
+val optionOption5: Option[Option[Int]]
+
+optionOption5 match {
+	case Some(Some(5)) => Do something when both options are some and the value is 5
+	case Some(Some(a)) => Do something when both options are some and the value is not 5
+	case Some(None) => Do something when the inner option is not present
+	case None => Do something when the outer option is not present
+}
+```
+
 #### Exercise
-
-Create an ADT to represent JSON values. JSON values can either be a String, a number, a key value pair (model this as a Map where the key is a String and the value is another json value) or an array of a json value itself
-
-Create an ADT for a binary tree. A binary tree is a generic type where you either have a left or a right value. When finished, verify your answer at page 10.
+1. create a function `shout` that retrieves a Pet as an argument and shouts the appropriate value to the console. NOTE: this usually breaks referential transparancy, but it's oke for demo purposes. The function `println` prints to the console.
 
 ## Recursion
-
 In this chapter, we are going to use are gained knowledge of ADT and pattern matching and use recursion, which is the way of iterating over a sequence. Although recursion is supported in other paradigms, it's not often used. One of the reason is the absence of tail-call elimination, which will be explained later as it's crucial for functional languages.
 
-A recursive function is a function that has a reference call to itself. Let's take a look at the following ADT, which represents a linked list.
+A recursive function is a function that has a reference call to itself. We can use an ADT again to create a linked list
+
 
 ```
 sealed trait List[+A]
@@ -315,72 +337,134 @@ case class Cons[A](value: A, tail: List[A]) extends List[A]
 
 This is an recursive ADT. It can be read as following: A list of type A is either Nil (which represents an empty list) or a Cons with a value of type A and a tail (which is a list of type A itself).
 
-Let's say we have the following list
+With this ADT we are able to represent a list
 
 ```
 Cons(1, Cons(2, Cons(3, Nil))) // A list with 3 elements: 1, 2, 3
 ```
 
-We can write a recursive function to calculate the length of a list.
+We can write a recursive function to calculate the length of a list. As you can see in the implementation of length, it calls itself in the body of the function.
 
 ```
 def length[A](list: List[A]): Int = list match {
   case Nil => 0
-  case Cons(_, tail) => 1 + length(tail)
+  case Cons(_, tail) => 1 + length(tail) // The recursive call to length
 }
 ```
 
 This function take a list as input. Whenever the pattern corresponds with Cons, we will return 1 + length(tail). If the value corresponds with Nil it will return a 0.
 
+In functional programming, we can use the substitution model where we evaluate the expressions to values. We can do this because no functions have side-effects; same input returns to same output and can be substituted by it's expected result.
+
 We can use the substitution model to evaluate this expression.
 
 ```
+Expression:
+length(Cons(1, Cons(2, Cons(3, Nil))))
+
 1. length(Cons(1, Cons(2, Cons(3, Nil))))
 2. 1 + length(Cons(2, Cons(3, Nil))))
 3. 1 + (1 + length(Cons(3, Nil)))
 4. 1 + (1 + (1 + 0))
 5. 3
 ```
-
-There are 3 laws a recursive function must obey:
+Recursive functions have some laws that they must obey:
 * A recursive algorithm must have a base case.
 * A recursive algorithm must change its state and move toward the base case.
 * A recursive algorithm must call itself, recursively.
 
-The base case is the condition that stops the recursion. In the case of calculating the end, this would be the pattern match on Nil.
+The base case is the condition that stops the recursion. In the case of the length function, the base case is evaluating to 0 whenever the list is empty. This will stop the recursion.
 
-The second law states that the state must change and move towards the base case. Looking at the length function, the tail is used inside the recursive function instead of the entire list.
+The second law states that the state must change and move towards the base case. Looking at the length function, the tail is used inside the recursive function instead of the entire list. The list becomes smaller and gets closer to the empty list.
 
 The last law is obvious, which means that a recursive function must call itself.
 
+Practice, practice and practice even more!
+
 ### Exercises
+* Write a function that takes a List[Int] and returns the sum value. Use the following signature:
+```
+def sum(list: List[Int]): Int
+```
 
+* Write a function append that adds an element to the end of the list:
 ```
-Create a recursive ADT representing a binary tree. Make sure it's generic typed.
+def append[A](a: A)(list: List[A]): List[A]
 ```
 
+* Write a function prepend that adds an element in front of the list:
 ```
-Write a recursive function that calculates the sum of all the items of a binary tree
+def prepend[A](a: A)(list: List[A]): List[A]
+```
+
+* Write a function called concat that concatenates 2 lists:
+```
+def concat[A](l1: List[A], l2: List[A]): List[A]
+```
+
+* Write a function called map which takes a list and a HOF that will transform every element of the list by applying the function:
+```
+def map[A, B](list: List[A])(f: A => B): List[B]
+```
+
+* Write a function called filter that takes a list and a predicate and returns a list with all elements where the predicate holds:
+```     
+// This is the scala boolean, not the earlier used boolean
+def filter[A](list: List[A])(f: A => Boolean): List[A]
+```
+
+* Write a function called any which verifies that atleast one element holds to the predicate function:
+```
+def any[A](list: List[A])(f: A => Boolean): Boolean
+```
+
+* Write a function called all which verifies that all elements hold to the predicate function:
+```
+def all[A](list: List[A])(f: A => Boolean): Boolean
+```
+
+* Write a function called flatMap that takes a list and a HOF of type `A => List[B]` and returns a List[B]. The function should "flatten" the lists. it works like this:
+```
+-- with Scala list
+flatMap(List(1, 2, 3))(x => List(x, x)) should evaluate to List(1, 1, 2, 2, 3, 3)
+This is different to map, where the result would evaluate to List(List(1, 1), List(2, 2), List(3, 3))
+
+-- with our list
+flatMap(Cons(1, Cons(2, Cons(3, Nil))))(x => Cons(x, Cons(x, Nil)))
+```
+
+Hint: use the concat function written before.
+```
+def flatMap[A, B](list: List[A])(f: A => List[B]): List[B]
 ```
 
 ### tail-recursion
 
-Tail-recursion is a special form of recursion, which is very important in functional programming. To demonstrate it's important, go run the sum function written before with the following argument: (1 until 10000 toList). Before you continue, what happened?
+Tail-recursion is a special form of recursion, which is very important in functional programming. To demonstrate it's importance, run the following function in the repl. Before you continue, what happened?
+```
+// This is not the list we used before, this is scalas list. It's easier for demo purpose
+def sum(list: List[Int]): Int = list match {
+	case Nil => 0
+	case x :: xs => x + sum(xs)
+}
+
+val list = 1 to 1000 toList
+sum(list)
+```
 
 We got a StackOverflow exception. Does this mean we can't do these kinds of things in functional programming? Ofcourse not, tail-recursion to the rescue!
 
-So what exactly happened when we ran the function with a list from 1 to 10000? Every time you call a function, a stack frame will be put onto the stack. A stack is a data structure where you can put data on, but only the item put on the latest can be taken off it. So every time a function is called, a stack frame is added onto the stack containing information about the function call. In our case, we got a recursive function, which will generate a new stackframe work for every recursive call and this will eventually exceed the limit.
+So what exactly happened when we ran the function with a list from 1 to 1000? Every time you call a function, a stack frame will be put onto the stack. A stack is a data structure where you can put data on, but only the item put on the latest can be taken off. So every time a function is called, a stack frame is added onto the stack containing information about the function call. In our case, we got a recursive function, which will generate a new stackframe work for every recursive call and this will eventually exceed the limit.
 
 Tail-recursion is a recursive function where the recursive call is the absolute latest thing the function does. Take another look at the sum example:
-
 ```
 def sum(list: List[Int]): Int = list match {
   case Nil => 0
-  case x :: xs => x + sum(xs)
+  case Cons(x, xs) => x + sum(xs)
 }
 ```
 
-In this case the function can only complete when in completes the recursive call and afterwards still execute the addition to it's current item. If we use the substitution model we get the following result
+In this case the function can only complete when it completes the recursive call and afterwards still execute the addition to reduce the expression to a single value. If we use the substitution model we get the following result
 
 ```
 1. sum(Cons(1, Cons(2, Cons(3, Cons(4, Cons(5, Cons(6, Nil)))))))
@@ -394,7 +478,7 @@ In this case the function can only complete when in completes the recursive call
 9. 21
 ```
 
-The expression is constantly expanding, where at the end when eventually all the recursive calls are executed, the expression needs to be evaluated as a whole, in the previous example this is step 8 to 9.
+The expression is constantly expanding, where at the end when eventually all the recursive calls are executed, the expression needs to be evaluated as a whole. In the previous example this is step 8 to 9.
 
 We can implement sum in tail form as following
 
@@ -423,17 +507,14 @@ Let's do the same as we did with the previous example. We can use the substituti
 9. 21
 ```
 
-As you can see, when we apply the substitution model on a tail recursive function, the function is rewritten instead of expanded every recursive call. We accumulate the state in the recursive function. We can say that in terms of loop, loop(Cons(6, Nil)), 15) === loop(Nil, 21). These are steps 7 and 8 from the evaluation of the substitution model.
+As you can see, when we apply the substitution model on a tail recursive function, the function is rewritten instead of expanded every recursive call. We accumulate the state in the recursive function. We can say that in terms of loop, loop(Cons(6, Nil)), 15) === loop(Nil, 21). These are steps 7 and 8 from the evaluation with the substitution model.
 
 ## Hands-on
+Rewrite some of the functions written earlier to work on larger number of items by using tail-recursion. It's up to you how much you want to rewrite.
 
-## Abstracting over the pattern (head- and tail recursion)
+## Folding
 
-Before you continue reading, do you see how we can abstract over these kinds of functions?
-Hint 1: What is the similarity between the product and sum functions written earlier?
-
-Let's take another look at the implementations:
-
+Take a look at the following functions
 ```
 def sum(list: List[Int]): Int = list match {
   case Nil => 0
@@ -451,8 +532,7 @@ We can see that the pattern is the same, only 2 things are different.
 * The value when the list is empty
 * The function that combines the head of the list to the result of the recursive part.
 
-To abstract over this pattern, we can paramaterize the things that can change, which will result in the following signature. We call this function foldLeft
-
+To abstract over this pattern, we can paramaterize the things that are different, which will result in the following signature. We call this function foldLeft
 ```
 def foldLeft[A](list: List[A])(z: A)(f: (A, A) => A): A
 ```
@@ -463,9 +543,10 @@ We can even make this function more generic, since we can remove the fact that t
 def foldLeft[A, B](list: List[A])(z: B)(f: (B, A) => B): B
 ```
 
-Try to implement this function. As you are implementing these kinds of abstractions, you will notice that there are not that many ways to implement this. As functional programmers say, just follow the types!
+## Exercises
+Try to implement foldLeft and write the sum and product functions in terms of foldLeft.
 
-We just implemented a function that can reduce a list of values to a single value. We can also implement a function which folds from the right side. This can be very important, since there are functions where order matters. Take subtraction for example with List(1, 2, 3). Folding from the left with the first element (1) as Z will result in (-4) where folding from the right with 3 as Z will result in 0.
+We just implemented a function that can reduce a list of values to a single value from left to right. We can also implement a function which folds from the right side. This can be very important, since there are functions where order matters. Take subtraction for example with List(1, 2, 3). Folding from the left with the first element (1) as Z will result in (-4) where folding from the right with 3 as Z will result in 0.
 
 Try implement foldRight now. The signature is as following:
 
@@ -479,9 +560,9 @@ We are not done yet, after we have discovered typeclasses, we can go a step furt
 
 ## Typeclass
 
-Typeclasses are simply said better interfaces. Interfaces fully work based on the subtyping system that object-oriënted languages offer. I can implement the interface on classes which then needs to implement the methods on the interface. There is a simple problem with interfaces, which is that we can't implement inferfaces on classes that we didn't create. For example, if we use a library where we want to have a value object that implements a certain interface. This is simply not possible. Hence, typeclasses solve this problem and more.
+Typeclasses are simply said better interfaces. Interfaces work based on the subtyping system that object-oriënted languages offer. Classes can implement interfaces which then needs to implement the methods on the interface. There is a simple problem with interfaces, which is that we can't implement inferfaces on classes that we didn't create. For example, if we use a library where we have a class that fully satisfy the methods in the interface. Since it's not in the hierarchy, we are not able to use it for polymorphism.
 
-In functional programming, we don't use this sub-typing. Simply said, data and things that can be done with the data are two seperate things. As an example we are going to take a look at a very simple example.
+In functional programming, we don't use sub-typing. Simply said, data and things that can be done with the data are two seperate things. As an example we are going to take a look at a very simple example. This example is a typeclass for equality.
 
 ```
 trait Eq[A] {
@@ -515,12 +596,10 @@ Now that we have type class instances available, we are able to test equality of
   intEq.equal(3, 4) // false
 ```
 
-This is very nice, but it's very likely that we want to abstract upon typeclasses. How do we get our type class instances?
-
-Implicits to the rescue! We can tell Scala that we want to implicitly rely that it exist. This will be verified at compile-time, so no runtime problems at all. We call this principle implicit evidence
+This is nice, but it's very likely that we want to abstract upon typeclasses. Later, when we implement the foldable typeclass, you will see why we want to abstract over it.  How do we get our type class instance?
+Implicits to the rescue! We can tell Scala that we want to implicitly rely that something exist. This will be verified at compile-time, so no runtime problems at all. We call this implicit evidence. Assume the following dummy setup. We have a new typeclass call empty. The helloWorldIfEmpty takes a parameter a and will implicitly summon the Eq instance and the Empty instance. Both must be in scope, but don't have to be specified explicitly.
 
 ```
-
 trait Empty[A] {
     def empty: A
 }
@@ -531,9 +610,7 @@ def helloWorldIfEmpty(a: A)(implicit eq: Eq[A], empty: Empty[A]): String = {
 }
 ```
 
-The implicit keyword can only be in the last parameter list. If you rely on multiple implicits, you can add them in the last argument list as shown in the example. In this case, the caller of the function don't need to provide how the value can be verified for equality and what the empty value is for a given type.
-
-/* Explain implicit scope /*
+The implicit keyword can only be in the last parameter list. If you rely on multiple implicits, you can add them in the last argument list as shown in the example.
 
 We need to change 1 more thing to make this code compile. We need to make the instances implicit. You can do this by adding implicit in front of the val or def.
 
@@ -541,7 +618,7 @@ We need to change 1 more thing to make this code compile. We need to make the in
 implicit val stringEq = new Eq[String]
 ```
 
-Let's do some examples
+Let's show how this work together
 
 ```
 implicit val intEq = new Eq[Int] {
@@ -570,9 +647,9 @@ helloWorldIfEmpty("") // "Hello World"
 
 ```
 
-What I personally really like about typeclasses is that they are existential. You can add functionality to your types which will really make sense if you use them more often!
+What I personally really like about typeclasses is that they are existential. You can add functionality to your types which will really make sense if you use them more often! It also solves the diamond problem in object-oriented languages. I'm will not explain it here, but just wanted to mention it :)
 
-## Abstracting the length method using typeclasses
+## Abstracting the length function using typeclasses
 
 Remember that we wrote the length function when practicing our recursion skills. It looks like this:
 
@@ -600,11 +677,12 @@ While we practiced our recursion skills, we discovered a pattern and factored th
 def length[A](list: List[A]): Int = foldLeft(list)(0)((b, _) => b + 1)
 ```
 
-But, we can go even further! Remember the tree? Isn't it weird that we are not able to compute the length of a tree? To do so, I need to write a new function.. Bummer! I wish there was something called.... typeclasses! There is a special typeclass that we can use perfectly suited for our needs. Take another look at our length function written with foldLeft. The problem is the hardcoded type-constructor that we can fold. The foldable typeclass looks like this:
+But, we can go even further! We might also want to know the "length" of a tree, better called the number of nodes of a tree.  Isn't it weird that we are not able to compute the length of a tree? To do so, We need to write a new function.. Bummer! I wish there was something called.... typeclasses! There is a special typeclass that we can use perfectly suited for our needs. Take another look at our length function written with foldLeft. The problem is the hardcoded type-constructor (in this case List) that we can fold. We should be able to reuse this function for everything that have a foldLeft function, right? Let's look at foldable. It looks like this.
 
 ```
 trait Foldable[F[_]] {
 	def foldLeft[A, B](fa: F[A])(z: B)(f: (B, A) => B): B
+	def foldRight[A, B](fa: F[A])(z: B)(f: (A, B) => B): B
 }
 ```
 
@@ -625,6 +703,6 @@ case class Leaf[A](v: A) extends Tree[A]
 2. Try to make the length function work for both the List and Tree
 
 ```
-def length[F[_], A](fa: F[A])(implicit foldable: Foldable[F]): Int = 
+def length[F[_], A](fa: F[A])(implicit foldable: Foldable[F]): Int =
 	foldable.foldLeft(fa)(0)((b, _) => b + 1)
 ```
