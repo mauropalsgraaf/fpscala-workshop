@@ -3,45 +3,21 @@ object Recursion {
   case object Nil extends List[Nothing]
   case class Cons[A](value: A, tail: List[A]) extends List[A]
 
-  def sum(list: List[Int]): Int = list match {
-    case Nil => 0
-    case Cons(x, xs) => x + sum(xs)
-  }
+  def sum(list: List[Int]): Int = ???
 
-  def append[A](a: A)(list: List[A]): List[A] = Cons(a, list)
+  def append[A](a: A)(list: List[A]): List[A] = ???
 
-  def prepend[A](a: A)(list: List[A]): List[A] = list match {
-    case Nil => Cons(a, Nil)
-    case Cons(x, xs) => append(x)(prepend(a)(xs))
-  }
+  def prepend[A](a: A)(list: List[A]): List[A] = ???
 
-  def concat[A](l1: List[A], l2: List[A]): List[A] = l2 match {
-    case Nil => l1
-    case Cons(x, xs) => concat(prepend(x)(l1), xs)
-  }
+  def concat[A](l1: List[A], l2: List[A]): List[A] = ???
 
-  def map[A, B](list: List[A])(f: A => B): List[B] = list match {
-    case Nil => Nil
-    case Cons(x, xs) => Cons(f(x), map(xs)(f))
-  }
+  def map[A, B](list: List[A])(f: A => B): List[B] = ???
+  
+  def filter[A](list: List[A])(f: A => Boolean): List[A] = ???
 
-  def filter[A](list: List[A])(f: A => Boolean): List[A] = list match {
-    case Nil => Nil
-    case Cons(x, xs) => if (f(x)) { append(x)(filter(xs)(f)) } else { filter(xs)(f) }
-  }
+  def any[A](list: List[A])(f: A => Boolean): Boolean = ???
 
-  def any[A](list: List[A])(f: A => Boolean): Boolean = list match {
-    case Nil => false
-    case Cons(x, xs) => if (f(x)) true else any(xs)(f)
-  }
+  def all[A](list: List[A])(f: A => Boolean): Boolean = ???
 
-  def all[A](list: List[A])(f: A => Boolean): Boolean = list match {
-    case Nil => true
-    case Cons(x, xs) => if (f(x)) all(xs)(f) else false
-  }
-
-  def flatMap[A, B](list: List[A])(f: A => List[B]): List[B] = list match {
-    case Nil => Nil
-    case Cons(x, xs) => concat(f(x), flatMap(xs)(f))
-  }
+  def flatMap[A, B](list: List[A])(f: A => List[B]): List[B] = ???
 }

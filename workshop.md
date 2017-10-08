@@ -13,7 +13,7 @@
 
 ## Introduction
 
-Welcome to the workshop Functional programming, where you will get in touch with the absolute basics of functional programming. This workshop consists of several parts. First we will introduce explain what functional programming. Then we will take a closer look at several reasons why functional programming is increasing in popularity. This will be followed by a hands-on, where you will begin your journey through the basics of Scala and FP. You will play around with algebraïc data types, pattern matching, recursion and typeclasses. All topics will be explained and there are exercises in between that requires you to put the gained knowledge into practice.
+Welcome to the workshop Functional programming, where you will get in touch with the basics of functional programming. This workshop consists of several parts. First we will explain what functional programming is. Then we will take a closer look at several reasons why functional programming is increasing in popularity. This will be followed by a hands-on, where you will begin your journey through the basics of Scala and FP. You will play around with algebraïc data types, pattern matching, recursion and typeclasses. All topics will be explained and there are exercises in between that requires you to put the gained knowledge into practice.
 
 Let's get started right away!
 
@@ -509,8 +509,11 @@ Let's do the same as we did with the previous example. We can use the substituti
 
 As you can see, when we apply the substitution model on a tail recursive function, the function is rewritten instead of expanded every recursive call. We accumulate the state in the recursive function. We can say that in terms of loop, loop(Cons(6, Nil)), 15) === loop(Nil, 21). These are steps 7 and 8 from the evaluation with the substitution model.
 
+## Scala compiler
+For writing tail-recursive functions, you can let Scala help you. You can probably imagine a situation where you think you wrote a function with tail-recursion, but you made a mistake and the compiler cannot optimize. This is a bug right and we don't want that. To prevent this, we can use the @annotation.tailrec annotation above the recursive functions. Whenever you compile your project, when the function with the annotation is not in tail-call or cannot be optimized, the compiler will give you a warning. With SBT (Scala build tool) you can transform this warning to error if you would like. We are not doing that today.
+
 ## Hands-on
-Rewrite some of the functions written earlier to work on larger number of items by using tail-recursion. It's up to you how much you want to rewrite.
+Rewrite some of the functions written earlier to work on larger number of items by using tail-recursion. It's up to you how much you want to rewrite, but practice is good. Add the annotation to make sure it's in tail position.
 
 ## Folding
 
