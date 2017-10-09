@@ -19,7 +19,7 @@ Let's get started right away!
 
 ## What is functional programming
 
-As you would have expected, functions are the primary building block of application written in FP. This is in contract to object-oriënted programming, where classes are used to construct programs. Functions are so called "first class citizens", which means that functions are like data. You can just use them as any other ordanairy type like String and Int. You can for example pass them as a parameter to another function or have a function that returns another function when called. A function that either receives atleast one parameter as argument or returns a function is called a higher-order function.
+As you would have expected, functions are the primary building block of application written in FP. This is in contract to object-oriënted programming, where classes are used to construct programs. Functions are so called "first class citizens", which means that functions are like data. You can just use them as any other ordanairy type like String and Int. You can for example pass them as a parameter to another function or have a function that returns another function when called. A function that either receives at least one function as argument or returns a function is called a higher-order function.
 
 A function in functional programming are expressions, which is in contrast to imperative programming language where they consist of a number of statements which will be executed sequentially. A definition given by Wikipedia: “Expressions are a combination of one or more explicit values, constants, variables, operators and functions that the programming language interprets and computes to produce another value". There are slightly different flavors of functional programming. We will pay attention to purely functional programming. This will restrict functions in a sense that they need to be pure. What does it mean to write a pure function?
 
@@ -52,7 +52,7 @@ def identity(a: Int): Int = a // returns it's input argument
 
 Having functions that are referentially transparant provide some great benefits. Reasoning about software becomes easier and software is more likely to be correct. We will discuss some advantages of functional programming in a bit. First we are going to take a look at why having referentially transparant functions is important.
 
-This example originally comes from the book Functional Programming in Scala and shows that functions that contain side-effects do not compose. Consider the following function written in Scala. More details will be explained later, but the intend should be clear. This function will give you a coffee given a CreditCard and a PaymentService. There is an obvious side-effect in the function, which is calling the PaymentService. This will charge the CreditCard for the price of a cup of coffee.
+This example originally comes from the book Functional Programming in Scala and shows that functions that contain side-effects do not compose. Consider the following function written in Scala. More details later, but the intend should be clear. This function will give you a coffee given a CreditCard and a PaymentService. There is an obvious side-effect in the function, which is calling the PaymentService. This will charge the CreditCard for the price of a cup of coffee.
 
 ```
 class Cafe {
@@ -119,15 +119,26 @@ The next chapter will introduce a couple of benefits of functional programming.
 
 Before we can start using functional programming, it's always useful to look at the pre-claimed benefits and what goal it's trying to achieve. In case of functional programming there are several reasons people claim it's great and they explain the major reasons of the increase in popularity. Three reasons will be described briefly below.
 
+### Correctness
+
+In October 2017, there has been a research at the University of California focussed on different aspects of programming languages and the impact that these have on bugs and errors in software. They took 4 different aspects of languages into account
+
+* Functional vs Procedural
+* Statically typed vs dynamically typed
+* Whether the language allows implicit convertion. (is "7" + 2 allowed for example or is it an error. It could be allowed due to implicit conversion where "7" could be converted to int 7 or 2 could be converted to string "2")
+* Managed memory vs unmanaged memory
+
+I really recommend you to read this paper, since the results are absolutely great. It shows that the functional programming languages are by far more correct than procedural languages and that statically typed languages are better in terms of correctness than dynamically typed languages. The paper concludes in the end that statically typed functional programming languages are better than the rest, but I think that is a bit generalised.
+
 ### Concurrency & parallelism
 
 The importance of concurrency and parallelism is increasing. Gorden Moore, co-founder of Intel predicted in 1965 that the number of transistors on processors would double every year. A couple of years later he adjusted his claim to a doubling every two years. This claim is called Moores Law.
 
-Neil Thompson gave a populair rephrasing of Moores law: "Computing performance doubles every couple of years.". In figure 1 it's easy to see that the number of transistors is still doubling, but the effects positive effects are stagnating.
+Neil Thompson gave a populair rephrasing of Moores law: "Computing performance doubles every couple of years.". In figure 1 it's easy to see that the number of transistors is still doubling, but the positive effects are stagnating.
 
 For that reason, instead of putting more transistors onto a CPU, computers will get multiple CPUs (cores). This means that the time of free performance increases are gone and it's time that the cores are utilised as intended. This means an increase in importance of concurrency and parallelism.
 
-Concurrency and parallelism is very difficult. When using an imperitive programming language, a common this to do is to create variables with values that can change of time. This contains some problems. Look at the example below:
+Concurrency and parallelism is very difficult. When using an imperitive programming language, a common thing to do is to create variables with values that can change of time. This contains some problems. Look at the example below:
 
 ```
 public int x = 1;
@@ -144,7 +155,7 @@ void function2() {
 }
 ```
 
-The problem is that in a multiprocessor environment it is impossible to reason about this code. Let's assume that the lines are executed in the following order: 1, 2, 3, 4. This means that the result will be 15. But in an multiprocessor environment the lines could also be ordered as following: 1, 2, 4, 3. The result in this case will be 7. This problem is called the read-modify-write problem.
+The problem is that in a multiprocessor environment it is impossible to reason about this code. Assume that function1 and function2 are executed on different thredads and that the lines are executed in the following order: 1, 2, 3, 4. This means that the result will be 15. But in an multiprocessor environment the lines could also be ordered as following: 1, 2, 4, 3. The result in this case will be 7, since v1 and v2 got the old value, x gets updated and x on line 3 contains the new value. This problem is called the read-modify-write problem and makes reasoning about code absolutely impossible.
 
 When using functional languages where functions are referential transparant, these problems won't exist, since functions are uneffected by side-effects as time, global variables etc.
 
@@ -172,7 +183,7 @@ class Person(val name: String, val age: Int) {
 }
 ```
 
-This class has two properties: a name and an age. Both a public properties and will be accessible on instances of this class. Removing the val keywords in front add private before val will make them private. This class has one method. you can add methods with the def keyword (or val, the difference will be explained later). In this case it takes no parameters and returns Unit. It is good enough for now to read is as void.
+This class has two properties: a name and an age. Both are public properties and will be accessible on instances of this class. Removing the val keywords in front or adding the private before val will make them private. This class has one method. you can add methods with the def or val keyword, where def is a definition and val is a value. Since functions are values, they can be used as functions. In this case it takes no parameters and returns Unit. It is good enough for now to read is as void.
 
 Creating an instance of a class is the same as in Java.
 
@@ -192,7 +203,7 @@ Everything in an object is not correlated to an instance. You can compare them i
 
 #### Case classes
 
-Case classes are very similar as classes, but have some differences. You can define a case class just the same as a class, but with the keyword case in front.
+Case classes are very similar as classes, but have some differences. You can define a case class just the same as a class, but with the keyword `case` in front.
 
 ```
 case class Person(val name: String, val age: Int)
@@ -246,7 +257,7 @@ A function using the def keyword, classes, case classes and traits can all made 
 def identity[A](v: A): A
 ```
 
-In this case, the identity function can take any type as input and returns a value of that type as well. Multiple generics can be specified within the square brackets separated by a comma. The name of the generic doesn't matter, but it's convention to go from A up to Z.
+In this case, the identity function can take any type as input and returns a value of that type as well. Multiple generics can be specified within the square brackets separated by a comma. The name of the generic doesn't matter (needs to be capital), but it's convention to go from A up to Z.
 
 ### Nothing subtype
 
@@ -261,9 +272,8 @@ sealed trait Bool
 case object MyTrue extends Bool
 case object MyFalse extends Bool
 ```
-We create a sealed trait Emotion. You can add the sealed keyword if you don't want the trait to be extended from outside the file. Traits are also used a interfaces, where you really want this possibility of having a new class implementing the trait.
 
-We can this ADT Bool. Bool is the so called Type Constructor. When specifying types as parameters of functions or as return values, you will use the name of the Type Constructor.
+We call this ADT Bool. Bool is the so called Type Constructor. When specifying types as parameters of functions or as return values, you will use the name of the Type Constructor.
 
 MyTrue and MyFalse are data constructurs and these are the values that are used in your code. In this case it's an logical disjunctions (or), which specifies that Bool is either a MyTrue or a MyFalse.
 
@@ -275,12 +285,14 @@ case class Some[A](x: A) extends Option[A]
 case object None extends Option[Nothing]
 ```
 
-Again, we create a sealed ADT, because we don't want this trait to be extended outside this.
+Again, we create a sealed ADT, because we don't want this trait to be extended outside this file.
 
-[+A] means that this is a generic type, where the A needs to be a type itself, like Option[Int]. It can't for example be Option[List], because List itself is a type-constructor instead of a concrete type. You will need to specify the type of the list which would result in Option[List[Int]] or Option[List[String]]. The + in front means that the value is covariant. It means that if B is a subtype of A then option[B] is a subtype of Option[A].
+[+A] means that this is a generic type, where the A needs to be a type itself, like Option[Int]. It can't for example be Option[List] (where list is sealed trait List[+A]), because List itself is a so called higher-kinded type instead of a concrete type. You will need to specify the type of the list which would result in Option[List[Int]] or Option[List[String]].
+
+The + in front means that the value is covariant. It means that if B is a subtype of A then option[B] is a subtype of Option[A].
 
 ### Exercise
-1. Implement an ADT to represent Pets. An Pet can be cat with a name, a fish with a name and a Color or a squid with a name and age. A Color can be Blue, Green or Orange and can be represented as an ADT as well.
+1. Implement an ADT to represent Pets. An Pet can be a cat with a name, a fish with a name and a Color or a squid with a name and age. A Color can be Blue, Green or Orange and can be represented as an ADT as well.
 
 ## Pattern matching
 
@@ -305,12 +317,12 @@ def addTwoToOption(optionInt: Option[Int]): Option[Int] = optionInt match {
 }
 ```
 
-As we can see in the example, it allows us to destruct and get access to values in constrast to OO-languages like Java where you would implement getters. In our example, the variable v is a wild-card, where as the pattern matches, will be filled with the value of v. So if Option[Int] is `Some(5)`, v will be 5.
+As we can see in the example, it allows us to destruct and get access to values in contrast to OO-languages like Java where you would implement getters. In our example, the variable v is a wild-card, where as the pattern matches, will be filled with the value of v. So if Option[Int] is `Some(5)`, v will be 5.
 
 Also, we can stack this. If we have an Option[Option[Int]] we can stack patterns.
 
 ```
-val optionOption5: Option[Option[Int]]
+val optionOption5: Option[Option[Int]] = Some(Some(5))
 
 optionOption5 match {
 	case Some(Some(5)) => Do something when both options are some and the value is 5
@@ -320,14 +332,36 @@ optionOption5 match {
 }
 ```
 
+We see that we pattern match in the first case on a concrete value, but what if we cant to depend it on a predicate function (Int => Boolean for example). We can use guards in that case, where we can extend our pattern match.
+
+```
+val x = 3
+val optionOption5: Option[Option[Int]] Some(Some(x))
+
+val isEven: Int => Bool = x => x % 2 == 0
+
+optionOption5 match {
+  // Do something when both options are some and the value is even
+	case Some(Some(a)) if (isEven(a)) => ...
+  // Do something when both options are some and the value is odd
+  case Some(Some(a)) => ...
+  // Do something when the inner option is not present
+	case Some(None) => ...
+  // Do something when the outer option is not present
+	case None => ...
+}
+```
+
 #### Exercise
-1. create a function `shout` that retrieves a Pet as an argument and shouts the appropriate value to the console. NOTE: this usually breaks referential transparancy, but it's oke for demo purposes. The function `println` prints to the console.
+1. create a function `shout` that retrieves a Pet as an argument and returns a String.
+If its a cat, return "Meooowww, I'm $name" where name is the name of the cat.
+If its a fish, return "Blubblub, I'm a $color fishy with the name $name".
+If it's a squid, return "Hello, I'm $name and i'm $age years old"
 
 ## Recursion
 In this chapter, we are going to use are gained knowledge of ADT and pattern matching and use recursion, which is the way of iterating over a sequence. Although recursion is supported in other paradigms, it's not often used. One of the reason is the absence of tail-call elimination, which will be explained later as it's crucial for functional languages.
 
-A recursive function is a function that has a reference call to itself. We can use an ADT again to create a linked list
-
+A recursive function is a function that has a reference call to itself. We can show the use of this by first creating an recursive ADT for linked list.
 
 ```
 sealed trait List[+A]
@@ -382,6 +416,9 @@ The last law is obvious, which means that a recursive function must call itself.
 Practice, practice and practice even more!
 
 ### Exercises
+
+Note beforehand. A higher-order function (abbreviated as HOF) is a function that takes a function as parameter or returns a function. Functions in functional languages are just like data, where you can pass them around as arguments to functions or have a function that returns a function.
+
 * Write a function that takes a List[Int] and returns the sum value. Use the following signature:
 ```
 def sum(list: List[Int]): Int
@@ -402,28 +439,28 @@ def prepend[A](a: A)(list: List[A]): List[A]
 def concat[A](l1: List[A], l2: List[A]): List[A]
 ```
 
-* Write a function called map which takes a list and a HOF that will transform every element of the list by applying the function:
+* Write a HOF called map which takes a list and a function that will transform every element of the list by applying the function:
 ```
 def map[A, B](list: List[A])(f: A => B): List[B]
 ```
 
-* Write a function called filter that takes a list and a predicate and returns a list with all elements where the predicate holds:
+* Write a HOF called filter that takes a list and a predicate and returns a list with all elements where the predicate holds:
 ```     
 // This is the scala boolean, not the earlier used boolean
 def filter[A](list: List[A])(f: A => Boolean): List[A]
 ```
 
-* Write a function called any which verifies that atleast one element holds to the predicate function:
+* Write a HOF called any which verifies that atleast one element holds to the predicate function:
 ```
 def any[A](list: List[A])(f: A => Boolean): Boolean
 ```
 
-* Write a function called all which verifies that all elements hold to the predicate function:
+* Write a HOF called all which verifies that all elements hold to the predicate function:
 ```
 def all[A](list: List[A])(f: A => Boolean): Boolean
 ```
 
-* Write a function called flatMap that takes a list and a HOF of type `A => List[B]` and returns a List[B]. The function should "flatten" the lists. it works like this:
+* Write a HOF called flatMap that takes a list and a function of type `A => List[B]` and returns a List[B]. flatMap should "flatten" the lists. it works like this:
 ```
 -- with Scala list
 flatMap(List(1, 2, 3))(x => List(x, x)) should evaluate to List(1, 1, 2, 2, 3, 3)
@@ -486,7 +523,7 @@ We can implement sum in tail form as following
 def sum(list: List[Int]): Int = {
   def loop(list: List[Int], state: Int) = list match {
     def Nil => state
-    def x :: xs => loop(xs, state + x)
+    def Cons(x, xs) => loop(xs, state + x)
   }
 
   loop(list, 0)
@@ -510,7 +547,7 @@ Let's do the same as we did with the previous example. We can use the substituti
 As you can see, when we apply the substitution model on a tail recursive function, the function is rewritten instead of expanded every recursive call. We accumulate the state in the recursive function. We can say that in terms of loop, loop(Cons(6, Nil)), 15) === loop(Nil, 21). These are steps 7 and 8 from the evaluation with the substitution model.
 
 ## Scala compiler
-For writing tail-recursive functions, you can let Scala help you. You can probably imagine a situation where you think you wrote a function with tail-recursion, but you made a mistake and the compiler cannot optimize. This is a bug right and we don't want that. To prevent this, we can use the @annotation.tailrec annotation above the recursive functions. Whenever you compile your project, when the function with the annotation is not in tail-call or cannot be optimized, the compiler will give you a warning. With SBT (Scala build tool) you can transform this warning to error if you would like. We are not doing that today.
+For writing tail-recursive functions, you can let Scala help you. You can probably imagine a situation where you think you wrote a function with tail-recursion, but you made a mistake and the compiler cannot optimize. This is a bug and we don't want that. To prevent this, we can use the @annotation.tailrec annotation above the recursive functions. Whenever you compile your project, when the function with the annotation is not in tail-call or cannot be optimized, the compiler will give you a warning. With SBT (Scala build tool) you can transform this warning to error if you would like. We are not doing that today.
 
 ## Hands-on
 Rewrite some of the functions written earlier to work on larger number of items by using tail-recursion. It's up to you how much you want to rewrite, but practice is good. Add the annotation to make sure it's in tail position.
@@ -650,7 +687,7 @@ helloWorldIfEmpty("") // "Hello World"
 
 ```
 
-What I personally really like about typeclasses is that they are existential. You can add functionality to your types which will really make sense if you use them more often! It also solves the diamond problem in object-oriented languages. I'm will not explain it here, but just wanted to mention it :)
+What I personally really like about typeclasses is that they are existential. You can add functionality to your types which will really make sense if you use them more often! It also solves the diamond problem in object-oriented languages. I will not explain it here, but just wanted to mention it and if you are interested, you can look this up on google :)
 
 ## Abstracting the length function using typeclasses
 
@@ -704,8 +741,3 @@ case class Leaf[A](v: A) extends Tree[A]
 ```
 
 2. Try to make the length function work for both the List and Tree
-
-```
-def length[F[_], A](fa: F[A])(implicit foldable: Foldable[F]): Int =
-	foldable.foldLeft(fa)(0)((b, _) => b + 1)
-```
