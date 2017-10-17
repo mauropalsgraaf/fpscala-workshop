@@ -3,13 +3,10 @@ object Recursion {
   case object Nil extends List[Nothing]
   case class Cons[A](value: A, tail: List[A]) extends List[A]
 
-  def sum(list: List[Int]): Int = list match {
-    case Nil => 0
-    case Cons(x, xs) => x + sum(xs)
-  }
-
+  def sum(list: List[Int]): Int = ???
+  
   //This function is not recursive, but can be useful later
-  def append[A](a: A)(list: List[A]): List[A] = Cons(a, list)
+  def append[A](a: A)(list: List[A]): List[A] = ???
 
   def prepend[A](a: A)(list: List[A]): List[A] = ???
 
