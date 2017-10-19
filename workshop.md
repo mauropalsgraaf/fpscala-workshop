@@ -5,7 +5,7 @@
   * Why functional programming matters `15 min`
 * DIY part
   * Basic Scala `10 min`
-  * Algebraïc data types `10 min`
+  * algebraic data types `10 min`
   * Pattern matching `10 min`
   * Recursion `10 min`
   * Typeclass `15 min`
@@ -13,22 +13,22 @@
 
 ## Introduction
 
-Welcome to the workshop Functional programming, where you will get in touch with the basics of functional programming. This workshop consists of several parts. First, we will explain what functional programming is. Then we will take a closer look at several reasons why functional programming is increasing in popularity. This will be followed by a hands-on, where you will begin your journey through the basics of Scala and FP. You will play around with algebraïc data types, pattern matching, recursion and typeclasses. All topics will be explained and there are exercises in between that requires you to put the gained knowledge into practice.
+Welcome to the workshop Functional programming, where you will get in touch with the basics of functional programming. This workshop consists of several parts. First, we will explain what functional programming is. Then we will take a closer look at several reasons why functional programming is increasing in popularity. This will be followed by a hands-on, where you will begin your journey through the basics of Scala and FP. You will play with algebraic data types, pattern matching, recursion and typeclasses. All topics will be explained and there are exercises in between that requires you to put the gained knowledge into practice.
 
 Let's get started right away!
 
 ## What is functional programming
 
-As you would have expected, functions are the primary building block of an application written in FP. This is in contrast to object-oriënted programming, where classes are used to construct programs. Functions are so-called "first-class citizens", which means that functions are like data. You can just use them as any other ordinary type like String and Int. You can, for example, pass them as a parameter to another function or have a function that returns another function when called. A function that either receives at least one function as an argument or returns a function is called a higher-order function.
+As you would have expected, functions are the primary building blocks of an application written in FP. This is in contrast to object-oriented programming, where classes are used to construct programs. Functions are so-called "first-class citizens", which means that functions are like data. You can just use them as any other ordinary type like String and Int. You can, for example, pass them as a parameter to another function or have a function that returns another function when called. A function that either receives at least one function as an argument or returns a function is called a higher-order function.
 
-A function in functional programming are expressions, which is in contrast to imperative programming language where they consist of a number of statements which will be executed sequentially. A definition is given by Wikipedia: “Expressions are a combination of one or more explicit values, constants, variables, operators and functions that the programming language interprets and computes to produce another value". There are slightly different flavors of functional programming. We will pay attention to purely functional programming. This will restrict functions in a sense that they need to be pure. What does it mean to write a pure function?
+Functions in functional programming are expressions, which is in contrast to imperative programming language where they consist of a number of statements which will be executed sequentially. A definition is given by Wikipedia: “Expressions are a combination of one or more explicit values, constants, variables, operators and functions that the programming language interprets and computes to produce another value". There are slightly different flavors of functional programming. We will pay attention to purely functional programming. This will restrict functions in a sense that they need to be pure. What does it mean to write a pure function?
 
 A function is pure if it is referentially transparent. "An expression e is referentially transparent if, for all programs p, all occurrences of e in p can be replaced by the result of evaluating e without affecting the meaning of p. A function f is pure if the expression f(x) is referentially transparent for all referentially transparent x.”. Read that sentence a couple of time and make sure you understand. Simply said, we can substitute the function with it's predicted result without altering the behavior of the program. The following two functions are not referentially transparent:
 
 ```
 // This function is not referentially transparent, because if we substitute
 // the function call to function1() with "hello world",
-// we wouldn't have a println, a.k.a altering the program
+// we wouldn't have the println("test"), a.k.a we alter the programs behavior
 def function1() = {
   println("test")
 
@@ -39,13 +39,13 @@ def function1() = {
 // This function is not referentially transparent,
 // because the output is unpredictable.
 def randomNumber() = {
-  Math.random ....
+  Math.random() * 10 ....
 }
 ```
 
-There are multiple ways to break referential transparency. Everything that breaks it is called a side-effect. In the previous examples, println("test") and Math.random are the side-effect and the unpredictable parts of the function.
+There are multiple ways to break referential transparency. Everything that breaks it is called a side-effect. In the previous examples, println("test") and Math.random are the side-effects and the unpredictable parts of the function.
 
-The following function is referentially transparent
+The following functions are referentially transparent
 
 ```
 // This function is referentially transparent because we can
@@ -53,11 +53,17 @@ The following function is referentially transparent
 // If the function call is identity(3), we can replace it
 // with 3 without changing the program.
 def identity(a: Int): Int = a // returns it's input argument
+
+// This is referentially transparent because we can substitute
+// the function by it's output for every combination of x and y
+def add(x: Int, y: Int): Int = x + y
+
+add(5, 7) can be substituted with 12
 ```
 
 Having functions that are referentially transparent provide some great benefits. Reasoning about software becomes easier and software is more likely to be correct. We will discuss some advantages of functional programming in a bit. First, we are going to take a look at why having referentially transparent functions is important.
 
-This example originally comes from the book Functional Programming in Scala and shows that functions that contain side-effects do not compose. Consider the following function written in Scala. More details later, but the intent should be clear. This function will give you a coffee given a CreditCard and a PaymentService. There is an obvious side-effect in the function, which is calling the PaymentService. This will charge the CreditCard for the price of a cup of coffee.
+This example originally comes from the book Functional Programming in Scala and shows that functions that contain side-effects do not compose and are less reusable. Consider the following function written in Scala. More details later, but the intent should be clear. This function will give you a coffee given a CreditCard and a PaymentService. There is an obvious side-effect in the function, which is calling the PaymentService. This will charge the CreditCard for the price of a cup of coffee.
 
 ```
 class Cafe {
@@ -85,7 +91,7 @@ class Cafe {
 }
 ```
 
-While this implementation is technically correct, it's most likely not the result that we want to achieve. The PaymentService will be charged n times and will return n coffees. Also, other problems will arise with this implementation. Assume that the charge method on the PaymentService will send a request that has a chance to fail. What do we do when 1 call to the PaymentService fails?
+While this implementation is technically correct, it's most likely not the result that we want to achieve. The PaymentService will be charged n times and will return n coffees. Also, other problems will arise with this implementation. Assume that the charge method on the PaymentService will send a request that has a chance to fail. What do we do when 1 call to the PaymentService fails? Do we need to add glue code here that will handle this and maybe send another request?
 
 Functional programming to the rescue. We solve this by making the effect explicit in the type signature. In functional programming, we could implement this as following
 
@@ -102,13 +108,16 @@ class Cafe {
 
     // unzip transforms a list of tuples to tuples of two lists.
     val (coffees, charges) = purchases.unzip
-    // We combine the charges by reducing n charges to one charge by accumulating the charges
+    // We combine the charges by reducing n charges
+    // to one charge by accumulating the charges
     (coffees, charges.reduce((c1,c2) => Charge(c1.cc, c1.amount + c2.amount)))
   }
 }
 
 class PaymentService {
-  // The IO[Unit] can be read as: When I perform, I'm likely to perform some form of side-effect and return a Unit as result
+  // The IO[Unit] can be read as: When I perform,
+  // I'm likely to perform some form of
+  // side-effect and return a Unit as result
   def charge(charge: Charge): IO[Unit] = ..... // pay the bill
 }
 ```
@@ -141,9 +150,11 @@ The importance of concurrency and parallelism is increasing. Gorden Moore, co-fo
 
 Neil Thompson gave a popular rephrasing of Moores law: "Computing performance doubles every couple of years.". In figure 1 it's easy to see that the number of transistors is still doubling, but the positive effects are stagnating.
 
+<img src="./moorelaw.jpg" width="250"/>
+
 For that reason, instead of putting more transistors onto a CPU, computers will get multiple CPUs (cores). This means that the time of free performance increases are gone and it's time that the cores are utilized as intended. This means an increase in the importance of concurrency and parallelism.
 
-Concurrency and parallelism are very difficult. When using an imperative programming language, a common thing to do is to create variables with values that can change of time. This contains some problems. Look at the example below:
+Concurrency and parallelism are very difficult. When using an imperative programming language, a common thing to do is to create variables with values that can change in time. This contains some problems. Look at the example below:
 
 ```
 public int x = 1;
@@ -170,7 +181,7 @@ Before you are going to practice some basic functional concepts, it's time to im
 
 ### Paradigms
 
-Scala is a language that fully supports object-oriented as well as functional programming. Some functional constructs make use of some features of object-oriented and vice versa. This becomes clear when looking at the ADT, which is modeled using subtyping. More information about ADT will come later.
+Scala is a language that fully supports object-oriented as functional programming. Some functional constructs make use of some features of object-oriented and vice versa. This becomes clear when looking at the ADT, which is modeled using sub-typing. More information about ADT will come later.
 
 ### Classes / Objects / Case Classes / Traits
 
@@ -190,7 +201,7 @@ class Person(val name: String, val age: Int) {
 
 This class has two properties: a name and an age. The val keyword in front means that you can only get the value, but not set a new one. This can be done by changing it to var. Removing the val keyword will make both properties inaccessible from the outside.
 
-This class has one method. you can add methods with the def keyword. Since functions are values, they can be used as functions. In this case, it takes no parameters and returns Unit. It is good enough for now to read is as void.
+This class has one method. you can add methods with the def keyword. In this case, it takes no parameters and returns Unit. Unit can be read as void.
 
 Creating an instance of a class is the same as in Java.
 
@@ -217,7 +228,7 @@ case class Person(val name: String, val age: Int)
 To create an instance of a case class, you can do exactly the same as a class without the new keyword.
 
 ```
-Person("Mauro Palsgraaf", 21)
+val person: Person = Person("Mauro Palsgraaf", 21)
 ```
 
 One of the differences of a case class comparing to regular classes is that case classes are equal by values, not by reference. Look at the following snippet
@@ -262,17 +273,17 @@ A function using the def keyword, classes, case classes and traits can all made 
 def identity[A](v: A): A
 ```
 
-In this case, the identity function can take any type as input and returns a value of that type as well. Multiple generics can be specified within the square brackets separated by a comma. The name of the generic doesn't matter (needs to be capital), but it's convention to go from A up to Z.
+In this case, the identity function can take any type as input and returns a value of that type as well. Multiple generics can be specified within the square brackets separated by a comma. The name of the generic doesn't matter (needs to be capital), but it's convention to going from A to Z.
 
 ### Nothing subtype
 
-It can be necessary some time to have a subtype of everything. Most of the time this will be useful when encoding ADT. More about ADT will come later. It's the counterpart of Object in Java, where every class extends Object.
+It can be necessary some time to have a subtype of everything. It's the counterpart of Object in Java, where every class extends Object.
 
-## Currying
+### Currying
 
-Currying means that we can partially apply a function. In functional languages as Haskell, every function is a one-argument function. For example, a signature that looks like Int => Int => Int will take one argument (an Int) and returns a new function with the signature Int => Int. This function takes another Int argument and returns the final Int.
+Currying means that we can partially apply a function. In functional languages as Haskell, every function is a one-argument function. For example, a signature that looks like `Int => Int => Int` will take one argument (an Int) and returns a new function with the signature Int => Int. This function takes another Int argument and returns the final Int.
 
-Scala doesn't have only one argument functions. Instead, you can define functions that have multiple parameter lists. For example, the add function. We can invoke add by specifying the arguments in different argument lists.
+Scala doesn't have only one argument functions. Instead, you can define functions that have multiple parameter lists. For example, the add function. We can apply the add function by specifying the arguments in different argument lists.
 
 ```
 def add(x: Int)(y: Int): Int = {
@@ -298,11 +309,11 @@ Everything in functional programming is immutable. You are not able to change th
 
 Why do we embrace immutability in functional programming? First of all, immutability makes it easier to reason about code. Once a value is set, we are sure that it's never going to change. This argument goes hand-in-hand with referential transparency, where changing the value of a variable would be a side-effect in our code. Second, immutable objects are thread-safe which is in contrast with the earlier shown read-modify-write problem in section "Concurrency and parallelism". We don't have to introduce additional complexity like locks or monitors to make sure our code is thread-safe as we would need when using mutable objects.
 
-A disadvantage of immutability can be memory overhead and performance. If you have for example a list that it going to change often, it needs to construct a list every single time. It has a negative effect on performance since it's slower than just adding a value for example at the end of a mutable ArrayList and it cost more memory since instead of having one structure that is altered many times, you end up with many different kinds of intermediate structures.
+A disadvantage of immutability can be memory overhead and performance. If you have for example a list that it going to change often, it needs to construct a list every single time. It has a negative effect on performance since it's slower than just adding a value for example at the end of a mutable ArrayList and it cost more memory since instead of having one structure that is altered many times, you end up with many intermediate structures.
 
-## Algebraïc data types (ADT)
+## algebraic data types (ADT)
 
-An ADT is a type where we specify the shape of each of the elements. It is encoded using subtyping. ADTs are used whenever you have a fixed number of things a type can be. Take a boolean, it is either true or false. Or a JSON value, which can be a string, object, array, number etc. Let's look at an example:
+An ADT is a type where we specify the shape of each of the elements. It is encoded using sub-typing. ADTs are used whenever you have a fixed number of things a type can be. They are often used to model our domain, together with type aliases where you give a name to an existing type (for example, type Title = String). A simple example of an ADT is a boolean, it is either true or false. Or a JSON value, which can be a string, object, array, number etc. Let's look at an example:
 
 ```
 sealed trait Bool
@@ -328,26 +339,26 @@ Again, we create a sealed ADT, because we don't want this trait to be extended o
 
 [+A] means that this is a generic type, where the A needs to be a type itself, like Option[Int]. It can't, for example, be Option[List] (where the list is sealed trait List[+A]), because List itself is a so-called higher-kinded type instead of a concrete type. You will need to specify the type of the list to actually get a concrete type. This would result in Option[List[Int]] or Option[List[String]].
 
-The + in front means that the value is covariant. It means that if B is a subtype of A then option[B] is a subtype of Option[A].
+The + in front means that the value is covariant. It means that if B is a subtype of A than option[B] is a subtype of Option[A].
 
 ### Exercise
 1. Implement an ADT to represent Pets. A Pet can be a cat with a name, a fish with a name and a Color or a squid with a name and age. A Color can be Blue, Green or Orange and can be represented as an ADT as well.
 
 ## Pattern matching
 
-Pattern matching is a construct for checking a value against a pattern. It is comparable to a switch statement in Java-like languages but more powerful.
+Pattern matching is a construct for checking a value against a pattern. It is comparable to a switch statement in Java-like languages but more powerful. It allows us to check a pattern while destructing a value and accessing properties of the pattern.
 
 As an example, we will create a function called not, which will negate the boolean.
 
 ```
 // note that Bool is the ADT you just created yourself
 def not(bool: Bool): Bool = bool match {
-	case MyTrue => MyFalse
-	case MyFalse => MyTrue
+	case True => False
+	case False => True
 }
 ```
 
-You can see that we match the bool and give it the different options a bool can be. In this case, it's MyTrue and MyFalse. This is not much different that a switch statement. Let's look at a different example where we use the just created Option ADT for optionality. We create a function addTwoToOption which adds 2 if the option value is present
+You can see that we match the bool and give it the different options a bool can be. In this case, it's True and False. This is not much different that a switch statement. Let's look at a different example where we use the just created Option ADT for optionality. We create a function addTwoToOption which adds 2 if the option value is present
 
 ```
 def addTwoToOption(optionInt: Option[Int]): Option[Int] = optionInt match {
@@ -375,21 +386,24 @@ We see that we pattern match in the first case on a concrete value, but what if 
 
 ```
 val x = 3
-val optionOption5: Option[Option[Int]] Some(Some(x))
+val optionOption5: Option[Option[Int]] = Some(Some(x))
 
-val isEven: Int => Bool = x => x % 2 == 0
+def isEven(x: Int): Boolean = x % 2 == 0
 
-optionOption5 match {
+// y will be 2
+val y = optionOption5 match {
   // Do something when both options are some and the value is even
-	case Some(Some(a)) if (isEven(a)) => ...
+	case Some(Some(a)) if (isEven(a)) => 1
   // Do something when both options are some and the value is odd
-  case Some(Some(a)) => ...
+  case Some(Some(a)) => 2
   // Do something when the inner option is not present
-	case Some(None) => ...
+	case Some(None) => 3
   // Do something when the outer option is not present
-	case None => ...
+	case None => 4
 }
 ```
+
+Remember the sealed keyword when creating ADTs? Whenever we define a sealed ADT, the compiler will help us with pattern matching by doing exhaustivity checks. This means that the compiler verifies that we have a match for all the possible cases.
 
 #### Exercise
 1. create a function `shout` that retrieves a Pet as an argument and returns a String.
@@ -400,7 +414,7 @@ If it's a squid, return "Hello, I'm $name and i'm $age years old"
 ## Recursion
 In this chapter, we are going to use our gained knowledge of ADT and pattern matching and use recursion, which is the way of iterating over a sequence. Although recursion is supported in other paradigms, it's not often used. One of the reason is the absence of tail-call elimination, which will be explained later as it's crucial for functional languages.
 
-A recursive function is a function that has a reference call to itself. Lists in functional languages are linked lists since they have this recursive structure where you have 1 value and another list until the end.
+A recursive function is a function that has a reference call to itself. Sequences as Lists and Trees are a perfect use case for recursion. Lists in functional languages are linked lists. They have a great structure for recursion, where they are modeled as a value and the tail until the end.
 
 ```
 sealed trait List[+A]
@@ -524,13 +538,13 @@ def sum(list: List[Int]): Int = list match {
     case x :: xs => x + sum(xs)
 }
 
-val list = 1 to 1000 toList
+val list = 1 to 10000 toList
 sum(list)
 ```
 
-We got a StackOverflow exception. Does this mean we can't do these kinds of things in functional programming? Of course not, tail-recursion to the rescue!
+We got a StackOverflow exception. Does this mean we can't iterate over large sequences in functional programming? Of course not, tail-recursion to the rescue!
 
-So what exactly happened when we ran the function with a list from 1 to 1000? Every time you call a function, a stack frame will be put onto the stack. A stack is a data structure where you can put data on, but only the item put on the latest can be taken off. So every time a function is called, a stack frame is added to the stack containing information about the function call. In our case, we got a recursive function, which will generate a new stack frame for every recursive call and this will eventually exceed the limit.
+So what exactly happened when we ran the function with a list from 1 to 10000? Every time you call a function, a stack frame will be put onto the stack. A stack is a data structure where you can put data on, but only the item put on the latest can be taken off. So every time a function is called, a stack frame is added to the stack containing information about the function call. In our case, we got a recursive function, which will generate a new stack frame for every recursive call and this will eventually exceed the limit.
 
 Tail-recursion is a recursive function where the recursive call is the absolute latest thing the function does. Take another look at the sum example:
 ```
@@ -586,7 +600,7 @@ Let's do the same as we did with the previous example. We can use the substituti
 As you can see, when we apply the substitution model on a tail recursive function, the function is rewritten instead of expanded every recursive call. We accumulate the state in the recursive function. We can say that in terms of loop, loop(Cons(6, Nil)), 15) === loop(Nil, 21). These are steps 7 and 8 from the evaluation with the substitution model.
 
 ## Scala compiler
-For writing tail-recursive functions, you can let Scala help you. You can probably imagine a situation where you think you wrote a function with tail-recursion, but you made a mistake and the compiler cannot optimize. This is a bug and we don't want that. To prevent this, we can use the @annotation.tailrec annotation above the recursive functions. Whenever you compile your project, when the function with the annotation is not in tail-call or cannot be optimized, the compiler will give you a warning. With SBT (Scala build tool) you can transform this warning to error if you would like. We are not doing that today.
+When writing tail-recursive functions, you can let Scala help you. You can probably imagine a situation where you think you wrote a function with tail-recursion, but you made a mistake and the compiler cannot optimize. This is a bug in our code and we don't want that. To prevent this, we can use the @annotation.tailrec annotation above the recursive functions. Whenever you compile your project, when the function with the annotation is not in tail-call or cannot be optimized, the compiler will give you a warning. With SBT (Scala build tool) you can transform this warning to error if you would like. We are not doing that today.
 
 ## Hands-on
 Rewrite some of the functions written earlier to work on a larger number of items by using tail-recursion. It's up to you how much you want to rewrite, but practice is good. Add the annotation to make sure it's in tail position.
@@ -623,7 +637,7 @@ def foldLeft[A, B](list: List[A])(z: B)(f: (B, A) => B): B
 ```
 
 ## Exercises
-Try to implement foldLeft and write the sum and product functions in terms of foldLeft.
+1. Try to implement foldLeft and write the sum and product functions in terms of foldLeft.
 
 We just implemented a function that can reduce a list of values to a single value from left to right. We can also implement a function which folds from the right side. This can be very important since there are functions where order matters. Take subtraction for example with List(1, 2, 3). Folding from the left with the first element (1) as Z will result in (-4) where folding from the right with 3 as Z will result in 0.
 
@@ -641,7 +655,7 @@ We are not done yet. After we have discovered typeclasses, we can go a step furt
 
 Typeclasses are simply said better interfaces. Interfaces work based on the subtyping system that object-oriënted languages offer. Classes can implement interfaces which then needs to implement the methods on the interface. There is a simple problem with interfaces, which is that we can't implement interfaces on classes that we didn't create. For example, if we use a library where we have a class that fully satisfy the methods in the interface. Since it's not in the hierarchy, we are not able to use it for polymorphism.
 
-In functional programming, we don't use sub-typing. Simply said, data and things that can be done with the data are two separate things. As an example, we are going to take a look at a typeclass for verifying equality.
+In functional programming, data and things that can be done with the data are two separate things. We can use typeclasses to add functionality to data. As an example, we are going to take a look at a typeclass for verifying equality.
 
 ```
 trait Eq[A] {
@@ -675,8 +689,8 @@ Now that we have type class instances available, we are able to test equality of
   intEq.equal(3, 4) // false
 ```
 
-This is nice, but it's very likely that we want to abstract upon typeclasses. Later, when we implement the foldable typeclass, you will see why we want to abstract over it.  How do we get our type class instance?
-Implicits to the rescue! We can tell Scala that we want to implicitly rely on something. This will be verified at compile-time, so no runtime problems at all. We call this implicit evidence. Assume the following dummy setup. We have a new typeclass call empty. The helloWorldIfEmpty takes a parameter a and will implicitly summon the Eq instance and the Empty instance. Both must be in scope, but don't have to be specified explicitly.
+This is nice, but it's very likely that we want to abstract using typeclasses. Later, when we implement the foldable typeclass, you will see why we want to abstract over it.  How do we get our type class instance?
+Implicits to the rescue! We can tell Scala that we want to implicitly rely on something. This will be verified at compile-time, so no runtime problems at all. We call this implicit evidence. Assume the following dummy setup. We have a new typeclass called empty. The helloWorldIfEmpty takes a parameter a and will implicitly summon the Eq instance and the Empty instance. Both must be in scope, but don't have to be specified explicitly.
 
 ```
 trait Empty[A] {
